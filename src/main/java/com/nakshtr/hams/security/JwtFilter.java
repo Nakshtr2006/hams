@@ -1,26 +1,33 @@
 package com.nakshtr.hams.security;
 
+import com.nakshtr.hams.entity.User;
+import com.nakshtr.hams.repository.UserRepository;
 import com.nakshtr.hams.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
-    public JwtFilter(JwtService jwtService) {
+    public JwtFilter(
+            JwtService jwtService,
+            UserRepository userRepository
+    ) {
         this.jwtService = jwtService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -32,26 +39,39 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
 
-        if (header != null && header.startsWith("Bearer ")) {
+        if (header != null &&
+                header.startsWith("Bearer ")) {
 
             String token = header.substring(7);
 
-            if (jwtService.isTokenValid(token)) {
+            if (!jwtService.isTokenValid(token)) {
 
-                String email =
-                        jwtService.extractEmail(token);
+                response.setStatus(
+                        HttpServletResponse.SC_UNAUTHORIZED
+                );
+
+                return;
+            }
+
+            String email =
+                    jwtService.extractEmail(token);
+
+            User user = userRepository
+                    .findByEmail(email)
+                    .orElse(null);
+
+            if (user != null) {
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
-                                email,
+                                user.getEmail(),
                                 null,
-                                Collections.emptyList()
+                                List.of(
+                                        new SimpleGrantedAuthority(
+                                                "ROLE_" + user.getRole()
+                                        )
+                                )
                         );
-
-                auth.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
 
                 SecurityContextHolder
                         .getContext()

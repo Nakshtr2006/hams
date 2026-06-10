@@ -1,5 +1,6 @@
 package com.nakshtr.hams.service;
 
+import com.nakshtr.hams.dto.UpdateUserRequest;
 import com.nakshtr.hams.entity.User;
 import com.nakshtr.hams.exception.EmailAlreadyExistsException;
 import com.nakshtr.hams.exception.UserNotFoundException;
@@ -16,62 +17,108 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder) {
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> getAllUsers() {
+
         return userRepository.findAll();
     }
 
-    public User createUser(User user) {
+    public User createUser(
+            User user
+    ) {
 
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new EmailAlreadyExistsException(user.getEmail());
+        if (
+                userRepository.findByEmail(
+                        user.getEmail()
+                ).isPresent()
+        ) {
+
+            throw new EmailAlreadyExistsException(
+                    user.getEmail()
+            );
         }
 
-        user.setCreatedAt(LocalDateTime.now());
+        user.setCreatedAt(
+                LocalDateTime.now()
+        );
 
-        // Encrypt password before saving
         user.setPassword(
-                passwordEncoder.encode(user.getPassword())
+                passwordEncoder.encode(
+                        user.getPassword()
+                )
         );
 
-        return userRepository.save(user);
+        return userRepository.save(
+                user
+        );
     }
 
-    public User getUserById(Long id) {
+    public User getUserById(
+            Long id
+    ) {
+
         return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+                .orElseThrow(
+                        () ->
+                                new UserNotFoundException(id)
+                );
     }
 
-    public User updateUser(Long id, User updatedUser) {
+    public User updateUser(
+            Long id,
+            UpdateUserRequest request
+    ) {
 
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+        User existingUser =
+                userRepository.findById(id)
+                        .orElseThrow(
+                                () ->
+                                        new UserNotFoundException(id)
+                        );
 
-        existingUser.setName(updatedUser.getName());
-        existingUser.setEmail(updatedUser.getEmail());
-
-        // Encrypt updated password
-        existingUser.setPassword(
-                passwordEncoder.encode(updatedUser.getPassword())
+        existingUser.setName(
+                request.getName()
         );
 
-        existingUser.setPhone(updatedUser.getPhone());
-        existingUser.setGender(updatedUser.getGender());
-        existingUser.setRole(updatedUser.getRole());
-        existingUser.setActive(updatedUser.isActive());
+        existingUser.setPhone(
+                request.getPhone()
+        );
 
-        return userRepository.save(existingUser);
+        existingUser.setGender(
+                request.getGender()
+        );
+
+        existingUser.setRole(
+                request.getRole()
+        );
+
+        existingUser.setActive(
+                request.isActive()
+        );
+
+        return userRepository.save(
+                existingUser
+        );
     }
 
-    public void deleteUser(Long id) {
+    public void deleteUser(
+            Long id
+    ) {
 
-        if (!userRepository.existsById(id)) {
-            throw new UserNotFoundException(id);
+        if (
+                !userRepository.existsById(id)
+        ) {
+
+            throw new UserNotFoundException(
+                    id
+            );
         }
 
         userRepository.deleteById(id);

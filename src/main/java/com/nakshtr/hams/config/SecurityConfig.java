@@ -3,7 +3,7 @@ package com.nakshtr.hams.config;
 import com.nakshtr.hams.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,16 +31,100 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
+
                 .authorizeHttpRequests(auth -> auth
 
+                        // Public
                         .requestMatchers(
-                                "/auth/**"
+                                "/auth/**",
+                                "/login.html",
+                                "/signup.html",
+                                "/dashboard.html",
+                                "/products.html",
+                                "/users.html",
+                                "/auditlogs.html",
+                                "/dashboard/stats",
+                                "/css/**",
+                                "/js/**"
                         ).permitAll()
+
+                        // Product View
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/products/**"
+                        ).authenticated()
+
+                        // Product Create / Update / Delete
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/products"
+                        ).hasAnyRole(
+                                "ROOT",
+                                "ADMIN"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/products/**"
+                        ).hasAnyRole(
+                                "ROOT",
+                                "ADMIN"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/products/**"
+                        ).hasAnyRole(
+                                "ROOT",
+                                "ADMIN"
+                        )
+
+                        // Users View
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/users/**"
+                        ).hasAnyRole(
+                                "ROOT",
+                                "ADMIN",
+                                "MANAGER",
+                                "EMPLOYEE"
+                        )
+
+                        // User Create
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/users"
+                        ).hasRole("ROOT")
+
+                        // User Update
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/users/**"
+                        ).hasAnyRole(
+                                "ROOT",
+                                "ADMIN",
+                                "MANAGER"
+                        )
+
+                        // User Delete
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/users/**"
+                        ).hasRole("ROOT")
+
+                        // Audit Logs
+                        .requestMatchers(
+                                "/audit-logs/**"
+                        ).hasRole("ROOT")
 
                         .anyRequest()
                         .authenticated()
                 )
-                .httpBasic(httpBasic -> httpBasic.disable());
+
+                .httpBasic(
+                        httpBasic ->
+                                httpBasic.disable()
+                );
 
         http.addFilterBefore(
                 jwtFilter,

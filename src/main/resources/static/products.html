@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Products</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Products</h1>
+
+    <h2>Create Product</h2>
+
+    <input
+            type="text"
+            id="name"
+            placeholder="Product Name">
+
+    <input
+            type="text"
+            id="description"
+            placeholder="Description">
+
+    <input
+            type="number"
+            id="price"
+            placeholder="Price">
+
+    <input
+            type="number"
+            id="stock"
+            placeholder="Stock">
+
+    <button onclick="createProduct()">
+        Create Product
+    </button>
+
+    <button onclick="loadProducts()">
+        Refresh Products
+    </button>
+
+    <button onclick="goBack()">
+        Dashboard
+    </button>
+
+    <p id="message"></p>
+
+    <hr>
+
+    <div id="products"></div>
+
+</div>
+
+<script src="js/products.js"></script>
+
+</body>
+</html>

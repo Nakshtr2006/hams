@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HAMS Signup</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Customer Signup</h1>
+
+    <input type="text"
+           id="name"
+           placeholder="Name">
+
+    <input type="email"
+           id="email"
+           placeholder="Email">
+
+    <input type="password"
+           id="password"
+           placeholder="Password">
+
+    <input type="text"
+           id="phone"
+           placeholder="Phone">
+
+    <select id="gender">
+        <option value="MALE">Male</option>
+        <option value="FEMALE">Female</option>
+        <option value="OTHER">Other</option>
+    </select>
+
+    <button onclick="signup()">
+        Signup
+    </button>
+
+    <p id="message"></p>
+
+    <a href="login.html">
+        Back To Login
+    </a>
+
+</div>
+
+<script src="js/signup.js"></script>
+
+</body>
+</html>

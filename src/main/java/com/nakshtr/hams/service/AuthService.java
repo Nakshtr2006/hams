@@ -1,5 +1,8 @@
 package com.nakshtr.hams.service;
 
+import com.nakshtr.hams.dto.SignupRequest;
+import com.nakshtr.hams.entity.Gender;
+import com.nakshtr.hams.entity.Role;
 import com.nakshtr.hams.entity.User;
 import com.nakshtr.hams.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,12 +25,18 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
-    public String login(String email, String password) {
+    public User login(
+            String email,
+            String password
+    ) {
 
         User user = userRepository
                 .findByEmail(email)
                 .orElseThrow(() ->
-                        new RuntimeException("Invalid Email or Password"));
+                        new RuntimeException(
+                                "Invalid Email or Password"
+                        )
+                );
 
         boolean matches =
                 passwordEncoder.matches(
@@ -36,11 +45,47 @@ public class AuthService {
                 );
 
         if (!matches) {
+
             throw new RuntimeException(
                     "Invalid Email or Password"
             );
         }
 
-        return jwtService.generateToken(user.getEmail());
+        return user;
+    }
+
+    public User signup(
+            SignupRequest request
+    ) {
+
+        if (userRepository.findByEmail(
+                request.getEmail()
+        ).isPresent()) {
+
+            throw new RuntimeException(
+                    "Email already exists"
+            );
+        }
+
+        User user = User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .password(
+                        passwordEncoder.encode(
+                                request.getPassword()
+                        )
+                )
+                .phone(request.getPhone())
+                .gender(
+                        Gender.valueOf(
+                                request.getGender()
+                                        .toUpperCase()
+                        )
+                )
+                .role(Role.CUSTOMER)
+                .active(true)
+                .build();
+
+        return userRepository.save(user);
     }
 }

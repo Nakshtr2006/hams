@@ -6,7 +6,11 @@ import com.nakshtr.hams.dto.SignupRequest;
 import com.nakshtr.hams.entity.User;
 import com.nakshtr.hams.service.AuthService;
 import com.nakshtr.hams.service.JwtService;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -24,37 +28,53 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public LoginResponse login(
+    public ResponseEntity<LoginResponse> login(
             @RequestBody LoginRequest request
     ) {
 
-        User user =
-                authService.login(
-                        request.getEmail(),
-                        request.getPassword()
-                );
+        User user = authService.login(
+                request.getEmail(),
+                request.getPassword()
+        );
 
         String token =
                 jwtService.generateToken(
                         user.getEmail()
                 );
 
-        return new LoginResponse(
-                token,
-                user.getEmail(),
-                user.getName(),
-                user.getRole().name()
+        return ResponseEntity.ok(
+
+                new LoginResponse(
+                        token,
+                        user.getEmail(),
+                        user.getName(),
+                        user.getRole().name()
+                )
         );
     }
 
     @PostMapping("/signup")
-    public User signup(
-            @jakarta.validation.Valid
+    public ResponseEntity<User> signup(
+
+            @Valid
             @RequestBody SignupRequest request
     ) {
 
-        return authService.signup(
-                request
+        User user =
+                authService.signup(request);
+
+        return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout() {
+
+        return ResponseEntity.ok(
+
+                Map.of(
+                        "message",
+                        "Logged out successfully"
+                )
         );
     }
 }

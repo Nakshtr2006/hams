@@ -10,39 +10,49 @@
 
     <h1>Products</h1>
 
-    <h2>Create Product</h2>
+    <div id="createProductSection">
 
-    <input
-            type="text"
-            id="name"
-            placeholder="Product Name">
+        <h2>Create Product</h2>
 
-    <input
-            type="text"
-            id="description"
-            placeholder="Description">
+        <input
+                type="text"
+                id="name"
+                placeholder="Product Name">
 
-    <input
-            type="number"
-            id="price"
-            placeholder="Price">
+        <input
+                type="text"
+                id="description"
+                placeholder="Description">
 
-    <input
-            type="number"
-            id="stock"
-            placeholder="Stock">
+        <input
+                type="number"
+                id="price"
+                placeholder="Price">
 
-    <button onclick="createProduct()">
-        Create Product
-    </button>
+        <input
+                type="number"
+                id="stock"
+                placeholder="Stock">
 
-    <button onclick="loadProducts()">
-        Refresh Products
-    </button>
+        <button
+                id="createButton"
+                onclick="createProduct()">
+            Create Product
+        </button>
 
-    <button onclick="goBack()">
-        Dashboard
-    </button>
+    </div>
+
+    <div class="actions">
+
+        <button onclick="loadProducts()">
+            Refresh Products
+        </button>
+
+        <button onclick="goBack()">
+            Dashboard
+        </button>
+
+    </div>
 
     <p id="message"></p>
 
@@ -52,6 +62,7 @@
 
 </div>
 
+<script src="js/common.js"></script>
 <script src="js/products.js"></script>
 
 </body>

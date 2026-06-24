@@ -4,29 +4,29 @@ body {
 
     background: #f5f5f5;
 
-    display: flex;
+    margin: 0;
 
-    justify-content: center;
-
-    align-items: center;
-
-    height: 100vh;
+    padding: 40px;
 }
 
 .container {
 
     background: white;
 
+    max-width: 900px;
+
+    margin: auto;
+
     padding: 30px;
 
-    width: 350px;
+    border-radius: 12px;
 
-    border-radius: 10px;
-
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    box-shadow: 0 0 10px rgba(0,0,0,0.15);
 }
 
-h1 {
+h1,
+h2,
+h3 {
 
     text-align: center;
 }
@@ -36,20 +36,92 @@ select {
 
     width: 100%;
 
-    padding: 10px;
+    padding: 12px;
 
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 
     box-sizing: border-box;
+
+    border: 1px solid #ccc;
+
+    border-radius: 6px;
 }
 
 button {
 
-    width: 100%;
-
-    padding: 10px;
+    padding: 10px 16px;
 
     cursor: pointer;
+
+    border: none;
+
+    border-radius: 6px;
+
+    background: #1976d2;
+
+    color: white;
+
+    font-size: 14px;
+
+    transition: 0.2s;
+}
+
+button:hover {
+
+    background: #1565c0;
+}
+
+.actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 15px;
+
+    margin-bottom: 15px;
+}
+
+.actions button {
+
+    flex: 1;
+}
+
+#createProductSection button {
+
+    width: 100%;
+}
+
+.product-card {
+
+    border: 1px solid #ddd;
+
+    border-radius: 10px;
+
+    padding: 20px;
+
+    margin-top: 20px;
+
+    background: #fafafa;
+}
+
+.product-card h3 {
+
+    margin-top: 0;
+}
+
+.product-actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 15px;
+}
+
+.product-actions button {
+
+    flex: 1;
 }
 
 p {
@@ -63,5 +135,5 @@ a {
 
     text-align: center;
 
-    margin-top: 10px;
+    margin-top: 15px;
 }

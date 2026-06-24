@@ -20,24 +20,33 @@
 
     <hr>
 
-    <button onclick="goToProducts()">
+    <button
+            data-testid="products-button"
+            onclick="goToProducts()">
         Products
     </button>
 
-    <button onclick="goToUsers()">
+    <button
+            data-testid="users-button"
+            onclick="goToUsers()">
         Users
     </button>
 
-    <button onclick="goToAuditLogs()">
+    <button
+            data-testid="auditlogs-button"
+            onclick="goToAuditLogs()">
         Audit Logs
     </button>
 
-    <button onclick="logout()">
+    <button
+            data-testid="logout-button"
+            onclick="logout()">
         Logout
     </button>
 
 </div>
 
+<script src="js/common.js"></script>
 <script src="js/dashboard.js"></script>
 
 </body>

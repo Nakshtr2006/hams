@@ -1,6 +1,7 @@
 package com.nakshtr.hams.service;
 
 import com.nakshtr.hams.entity.Product;
+import com.nakshtr.hams.exception.ProductNotFoundException;
 import com.nakshtr.hams.repository.ProductRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,11 +44,10 @@ public class ProductService {
 
     public Product getProductById(Long id) {
 
-        return productRepository.findById(id)
+        return productRepository
+                .findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException(
-                                "Product not found with id: " + id
-                        )
+                        new ProductNotFoundException(id)
                 );
     }
 
@@ -63,8 +63,8 @@ public class ProductService {
                 productRepository.save(product);
 
         auditLogService.log(
-                "Created Product: "
-                        + savedProduct.getName(),
+                "Created Product: " +
+                        savedProduct.getName(),
                 getCurrentUser()
         );
 
@@ -105,8 +105,8 @@ public class ProductService {
                 );
 
         auditLogService.log(
-                "Updated Product: "
-                        + savedProduct.getName(),
+                "Updated Product: " +
+                        savedProduct.getName(),
                 getCurrentUser()
         );
 
@@ -119,13 +119,11 @@ public class ProductService {
                 getProductById(id);
 
         auditLogService.log(
-                "Deleted Product: "
-                        + product.getName(),
+                "Deleted Product: " +
+                        product.getName(),
                 getCurrentUser()
         );
 
-        productRepository.delete(
-                product
-        );
+        productRepository.delete(product);
     }
 }

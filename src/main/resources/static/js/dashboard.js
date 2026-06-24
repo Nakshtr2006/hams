@@ -1,26 +1,14 @@
-const token =
-    localStorage.getItem("token");
+checkAuthentication();
 
-if (!token) {
+const name = localStorage.getItem("name");
+const role = (localStorage.getItem("role") || "").toUpperCase();
 
-    window.location.href =
-        "login.html";
-}
+console.log("Logged in Role:", role);
 
-const name =
-    localStorage.getItem("name");
-
-const role =
-    localStorage.getItem("role");
-
-document.getElementById(
-    "welcomeMessage"
-).innerText =
+document.getElementById("welcomeMessage").innerText =
     "Welcome " + name;
 
-document.getElementById(
-    "roleMessage"
-).innerText =
+document.getElementById("roleMessage").innerText =
     "Role: " + role;
 
 async function loadStats() {
@@ -28,111 +16,121 @@ async function loadStats() {
     try {
 
         const response =
-            await fetch(
-                "/dashboard/stats"
-            );
+            await authorizedFetch("/dashboard/stats");
 
         const stats =
             await response.json();
 
-        document.getElementById(
-            "stats"
-        ).innerHTML = `
+        document.getElementById("stats").innerHTML = `
             <h3>Total Users: ${stats.totalUsers}</h3>
             <h3>Total Products: ${stats.totalProducts}</h3>
             <h3>Total Audit Logs: ${stats.totalAuditLogs}</h3>
         `;
 
-    } catch(error) {
+    } catch (error) {
 
         console.error(error);
+
     }
+
 }
 
 function applyRolePermissions() {
 
+    console.log("Applying permissions for:", role);
+
     const usersButton =
-        document.querySelector(
-            'button[onclick="goToUsers()"]'
-        );
+        document.querySelector('[data-testid="users-button"]');
 
     const auditButton =
-        document.querySelector(
-            'button[onclick="goToAuditLogs()"]'
-        );
+        document.querySelector('[data-testid="auditlogs-button"]');
 
-    switch(role) {
+    switch (role) {
 
         case "ROOT":
+
+            console.log("ROOT -> Full Access");
+
             break;
 
         case "ADMIN":
 
+            console.log("ADMIN -> Hide Audit Logs");
+
             if (auditButton) {
-                auditButton.style.display =
-                    "none";
+                auditButton.style.display = "none";
             }
 
             break;
 
         case "MANAGER":
 
+            console.log("MANAGER -> Hide Audit Logs");
+
             if (auditButton) {
-                auditButton.style.display =
-                    "none";
+                auditButton.style.display = "none";
             }
 
             break;
 
         case "EMPLOYEE":
 
+            console.log("EMPLOYEE -> Hide Audit Logs");
+
             if (auditButton) {
-                auditButton.style.display =
-                    "none";
+                auditButton.style.display = "none";
             }
 
             break;
 
         case "CUSTOMER":
 
+            console.log("CUSTOMER -> Hide Users & Audit Logs");
+
             if (usersButton) {
-                usersButton.style.display =
-                    "none";
+                usersButton.style.display = "none";
             }
 
             if (auditButton) {
-                auditButton.style.display =
-                    "none";
+                auditButton.style.display = "none";
             }
 
             break;
+
+        default:
+
+            console.log("Unknown Role:", role);
+
+            break;
+
     }
+
 }
 
 function goToProducts() {
 
-    window.location.href =
-        "products.html";
+    window.location.href = "products.html";
+
 }
 
 function goToUsers() {
 
-    window.location.href =
-        "users.html";
+    window.location.href = "users.html";
+
 }
 
 function goToAuditLogs() {
 
-    window.location.href =
-        "auditlogs.html";
+    window.location.href = "auditlogs.html";
+
 }
 
 function logout() {
 
     localStorage.clear();
 
-    window.location.href =
-        "login.html";
+    window.location.href = "login.html";
+
 }
 
 loadStats();

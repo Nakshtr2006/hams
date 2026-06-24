@@ -1,58 +1,78 @@
-const token =
-    localStorage.getItem("token");
+checkAuthentication();
+
+const role =
+    localStorage.getItem("role");
 
 async function loadLogs() {
 
-    const response =
-        await fetch(
-            "/audit-logs",
-            {
-                headers: {
-                    Authorization:
-                        "Bearer " + token
-                }
-            }
-        );
+    try {
 
-    const logs =
-        await response.json();
+        const response =
+            await authorizedFetch("/audit-logs");
 
-    let html = "";
+        if (!response.ok) {
 
-    logs.reverse().forEach(log => {
+            document.getElementById("message").innerText =
+                "Failed to load audit logs.";
 
-        html += `
-            <div style="
-                border:1px solid black;
-                padding:10px;
-                margin:10px;
-            ">
+            return;
 
-                <h3>${log.action}</h3>
+        }
 
-                <p>
-                    Performed By:
-                    ${log.performedBy}
-                </p>
+        const logs =
+            await response.json();
 
-                <p>
-                    Time:
-                    ${log.createdAt}
-                </p>
+        let html = "";
 
-            </div>
-        `;
-    });
+        logs
+            .slice()
+            .reverse()
+            .forEach(log => {
 
-    document.getElementById(
-        "logs"
-    ).innerHTML = html;
+                html += `
+                    <div
+                        class="product-card"
+                        data-testid="audit-log-card">
+
+                        <h3>${log.action}</h3>
+
+                        <p>
+                            <strong>Performed By:</strong>
+                            ${log.performedBy}
+                        </p>
+
+                        <p>
+                            <strong>Time:</strong>
+                            ${log.createdAt}
+                        </p>
+
+                    </div>
+                `;
+
+            });
+
+        document.getElementById("logs").innerHTML =
+            html;
+
+        document.getElementById("message").innerText =
+            "Audit Logs Loaded Successfully";
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("message").innerText =
+            "Failed to load audit logs.";
+
+    }
+
 }
 
 function goBack() {
 
     window.location.href =
         "dashboard.html";
+
 }
 
 loadLogs();

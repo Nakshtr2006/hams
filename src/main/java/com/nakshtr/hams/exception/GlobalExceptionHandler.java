@@ -5,9 +5,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import com.nakshtr.hams.exception.EmailAlreadyExistsException;
-import com.nakshtr.hams.exception.UserNotFoundException;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,12 +32,13 @@ public class GlobalExceptionHandler {
                 .body(errors);
     }
 
-    @ExceptionHandler(RuntimeException.class)
+    @ExceptionHandler(ProductNotFoundException.class)
     public ResponseEntity<Map<String, String>>
-    handleRuntimeException(RuntimeException ex) {
+    handleProductNotFoundException(
+            ProductNotFoundException ex) {
 
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.NOT_FOUND)
                 .body(
                         Map.of(
                                 "message",
@@ -51,7 +49,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, String>>
-    handleUserNotFoundException(UserNotFoundException ex) {
+    handleUserNotFoundException(
+            UserNotFoundException ex) {
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
@@ -70,6 +69,21 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
+                .body(
+                        Map.of(
+                                "message",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, String>>
+    handleRuntimeException(
+            RuntimeException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
                 .body(
                         Map.of(
                                 "message",

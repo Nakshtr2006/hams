@@ -1,81 +1,77 @@
-const token =
-    localStorage.getItem("token");
+checkAuthentication();
 
-const role =
-    localStorage.getItem("role");
+const role = localStorage.getItem("role");
+
+const createProductSection =
+    document.getElementById("createProductSection");
 
 let editingProductId = null;
 
 async function loadProducts() {
 
-    const response =
-        await fetch(
-            "/products",
-            {
-                headers: {
-                    Authorization:
-                        "Bearer " + token
-                }
+    try {
+
+        const response =
+            await authorizedFetch("/products");
+
+        const products =
+            await response.json();
+
+        let html = "";
+
+        products.forEach(product => {
+
+            let buttons = "";
+
+            if (
+                role === "ROOT" ||
+                role === "ADMIN"
+            ) {
+
+                buttons = `
+                    <button
+                        data-testid="edit-button"
+                        onclick="editProduct(${product.id})">
+                        Edit
+                    </button>
+
+                    <button
+                        data-testid="delete-button"
+                        onclick="deleteProduct(${product.id})">
+                        Delete
+                    </button>
+                `;
             }
-        );
 
-    const products =
-        await response.json();
+            html += `
+    <div
+        class="product-card"
+        data-testid="product-card"
+        data-product-name="${product.name}">
 
-    let html = "";
+                    <h3>${product.name}</h3>
 
-    products.forEach(product => {
+                    <p>${product.description}</p>
 
-        let buttons = "";
+                    <p><strong>Price:</strong> ₹${product.price}</p>
 
-        if (
-            role === "ROOT" ||
-            role === "ADMIN"
-        ) {
+                    <p><strong>Stock:</strong> ${product.stock}</p>
 
-            buttons = `
-                <button
-                    onclick="editProduct(${product.id})">
-                    Edit
-                </button>
+                    ${buttons}
 
-                <button
-                    onclick="deleteProduct(${product.id})">
-                    Delete
-                </button>
+                </div>
             `;
-        }
+        });
 
-        html += `
-            <div style="
-                border:1px solid black;
-                padding:10px;
-                margin:10px;
-            ">
+        document.getElementById("products").innerHTML = html;
 
-                <h3>${product.name}</h3>
+    } catch (error) {
 
-                <p>
-                    ${product.description}
-                </p>
+        console.error(error);
 
-                <p>
-                    Price: Rs. ${product.price}
-                </p>
-
-                <p>
-                    Stock: ${product.stock}
-                </p>
-
-                ${buttons}
-
-            </div>
-        `;
-    });
-
-    document.getElementById(
-        "products"
-    ).innerHTML = html;
+        document.getElementById("message").innerText =
+            "Failed to load products.";
+    }
 }
 
 async function createProduct() {
@@ -83,150 +79,173 @@ async function createProduct() {
     const productData = {
 
         name:
-        document.getElementById(
-            "name"
-        ).value,
+            document.getElementById("name").value.trim(),
 
         description:
-        document.getElementById(
-            "description"
-        ).value,
+            document.getElementById("description").value.trim(),
 
         price:
-        document.getElementById(
-            "price"
-        ).value,
+            Number(document.getElementById("price").value),
 
         stock:
-        document.getElementById(
-            "stock"
-        ).value,
+            Number(document.getElementById("stock").value),
 
         active: true
     };
+
+    if (!productData.name) {
+
+        document.getElementById("message").innerText =
+            "Product name is required";
+
+        return;
+    }
+
+    if (!productData.description) {
+
+        document.getElementById("message").innerText =
+            "Product description is required";
+
+        return;
+    }
+
+    if (isNaN(productData.price) || productData.price < 0) {
+
+        document.getElementById("message").innerText =
+            "Price must be zero or greater";
+
+        return;
+    }
+
+    if (isNaN(productData.stock) || productData.stock < 0) {
+
+        document.getElementById("message").innerText =
+            "Stock must be zero or greater";
+
+        return;
+    }
 
     let url = "/products";
     let method = "POST";
 
     if (editingProductId !== null) {
 
-        url =
-            "/products/" +
-            editingProductId;
+        url = "/products/" + editingProductId;
 
         method = "PUT";
     }
 
-    const response =
-        await fetch(
-            url,
-            {
+    try {
+
+        const response =
+            await authorizedFetch(url, {
+
                 method: method,
 
                 headers: {
-                    "Content-Type":
-                        "application/json",
-
-                    Authorization:
-                        "Bearer " + token
+                    "Content-Type": "application/json"
                 },
 
-                body: JSON.stringify(
-                    productData
-                )
-            }
-        );
+                body: JSON.stringify(productData)
+            });
 
-    if (response.ok) {
+        if (response.ok) {
 
-        document.getElementById(
-            "message"
-        ).innerText =
-            editingProductId === null
-                ? "Product Created Successfully"
-                : "Product Updated Successfully";
+            document.getElementById("message").innerText =
+                editingProductId === null
+                    ? "Product Created Successfully"
+                    : "Product Updated Successfully";
 
-        clearForm();
+            clearForm();
 
-        loadProducts();
+            await loadProducts();
 
-    } else {
+        } else {
 
-        document.getElementById(
-            "message"
-        ).innerText =
+            document.getElementById("message").innerText =
+                "Operation Failed";
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("message").innerText =
             "Operation Failed";
     }
 }
 
 async function editProduct(id) {
 
-    const response =
-        await fetch(
-            "/products/" + id,
-            {
-                headers: {
-                    Authorization:
-                        "Bearer " + token
-                }
-            }
-        );
+    try {
 
-    const product =
-        await response.json();
+        const response =
+            await authorizedFetch("/products/" + id);
 
-    editingProductId = id;
+        const product =
+            await response.json();
 
-    document.getElementById(
-        "name"
-    ).value =
-        product.name;
+        editingProductId = id;
 
-    document.getElementById(
-        "description"
-    ).value =
-        product.description;
+        document.getElementById("name").value =
+            product.name;
 
-    document.getElementById(
-        "price"
-    ).value =
-        product.price;
+        document.getElementById("description").value =
+            product.description;
 
-    document.getElementById(
-        "stock"
-    ).value =
-        product.stock;
+        document.getElementById("price").value =
+            product.price;
 
-    document.getElementById(
-        "message"
-    ).innerText =
-        "Editing Product ID: " + id;
+        document.getElementById("stock").value =
+            product.stock;
+
+        document.getElementById("message").innerText =
+            "Editing Product ID: " + id;
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("message").innerText =
+            "Unable to load product.";
+    }
 }
 
 async function deleteProduct(id) {
 
-    const response =
-        await fetch(
-            "/products/" + id,
-            {
-                method: "DELETE",
+    if (!confirm("Are you sure you want to delete this product?")) {
+        return;
+    }
 
-                headers: {
-                    Authorization:
-                        "Bearer " + token
+    try {
+
+        const response =
+            await authorizedFetch(
+                "/products/" + id,
+                {
+                    method: "DELETE"
                 }
-            }
-        );
+            );
 
-    if (response.ok) {
+        if (response.ok) {
 
-        loadProducts();
+            document.getElementById("message").innerText =
+                "Product Deleted Successfully";
 
-    } else {
+            await loadProducts();
 
-        alert(
-            "Delete Failed"
-        );
+        } else {
+
+            document.getElementById("message").innerText =
+                "Delete Failed";
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("message").innerText =
+            "Delete Failed";
     }
 }
 
@@ -234,21 +253,13 @@ function clearForm() {
 
     editingProductId = null;
 
-    document.getElementById(
-        "name"
-    ).value = "";
+    document.getElementById("name").value = "";
 
-    document.getElementById(
-        "description"
-    ).value = "";
+    document.getElementById("description").value = "";
 
-    document.getElementById(
-        "price"
-    ).value = "";
+    document.getElementById("price").value = "";
 
-    document.getElementById(
-        "stock"
-    ).value = "";
+    document.getElementById("stock").value = "";
 }
 
 function goBack() {
@@ -262,21 +273,11 @@ if (
     role !== "ADMIN"
 ) {
 
-    document.getElementById(
-        "name"
-    ).style.display = "none";
+    if (createProductSection) {
 
-    document.getElementById(
-        "description"
-    ).style.display = "none";
+        createProductSection.style.display = "none";
 
-    document.getElementById(
-        "price"
-    ).style.display = "none";
-
-    document.getElementById(
-        "stock"
-    ).style.display = "none";
+    }
 }
 
 loadProducts();

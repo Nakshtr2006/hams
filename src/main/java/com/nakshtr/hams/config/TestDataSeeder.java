@@ -73,6 +73,15 @@ public class TestDataSeeder implements CommandLineRunner {
                 Gender.MALE,
                 Role.CUSTOMER
         );
+
+        System.out.println("Users in database: " + userRepository.count());
+
+        userRepository.findAll().forEach(user ->
+                System.out.println(
+                        user.getEmail() + " -> " + user.getRole()
+                )
+        );
+
     }
 
     private void createUser(

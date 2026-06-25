@@ -32,6 +32,13 @@ public class AuthController {
             @RequestBody LoginRequest request
     ) {
 
+        System.out.println(
+                "Login request: "
+                        + request.getEmail()
+                        + " / "
+                        + request.getPassword()
+        );
+
         User user = authService.login(
                 request.getEmail(),
                 request.getPassword()

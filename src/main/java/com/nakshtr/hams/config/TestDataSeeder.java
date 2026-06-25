@@ -78,7 +78,11 @@ public class TestDataSeeder implements CommandLineRunner {
 
         userRepository.findAll().forEach(user ->
                 System.out.println(
-                        user.getEmail() + " -> " + user.getRole()
+                        user.getEmail()
+                                + " -> "
+                                + user.getRole()
+                                + " -> "
+                                + user.getPassword()
                 )
         );
 

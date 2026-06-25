@@ -27,6 +27,8 @@ public class TestDataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
+        System.out.println(">>> TestDataSeeder is running...");
+
         createUser(
                 "Root User",
                 "root@hams.com",

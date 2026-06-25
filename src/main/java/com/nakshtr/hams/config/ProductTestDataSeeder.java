@@ -46,10 +46,6 @@ public class ProductTestDataSeeder implements CommandLineRunner {
                 15
         );
 
-        System.out.println(
-                "Products in database: "
-                        + productRepository.count()
-        );
     }
 
     private void createProduct(

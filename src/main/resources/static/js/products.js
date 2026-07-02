@@ -29,18 +29,22 @@ async function loadProducts() {
             ) {
 
                 buttons = `
-                    <button
-                        data-testid="edit-button"
-                        onclick="editProduct(${product.id})">
-                        Edit
-                    </button>
+    <div class="table-actions">
 
-                    <button
-                        data-testid="delete-button"
-                        onclick="deleteProduct(${product.id})">
-                        Delete
-                    </button>
-                `;
+        <button
+            data-testid="edit-button"
+            onclick="editProduct(${product.id})">
+            Edit
+        </button>
+
+        <button
+            data-testid="delete-button"
+            onclick="deleteProduct(${product.id})">
+            Delete
+        </button>
+
+    </div>
+`;
             }
 
             html += `
@@ -158,6 +162,8 @@ async function createProduct() {
 
             clearForm();
 
+            document.getElementById("createProductSection").style.display = "none";
+
             await loadProducts();
 
         } else {
@@ -186,6 +192,7 @@ async function editProduct(id) {
             await response.json();
 
         editingProductId = id;
+        document.getElementById("createProductSection").style.display = "block";
 
         document.getElementById("name").value =
             product.name;
@@ -281,3 +288,21 @@ if (
 }
 
 loadProducts();
+
+function toggleCreateProduct() {
+
+    const section =
+        document.getElementById("createProductSection");
+
+    if (section.style.display === "none") {
+
+        section.style.display = "block";
+
+    } else {
+
+        section.style.display = "none";
+
+        clearForm();
+    }
+
+}

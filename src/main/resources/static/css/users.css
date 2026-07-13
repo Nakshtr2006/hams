@@ -1,0 +1,11 @@
+.user-identity {
+    min-width: 220px;
+}
+
+.user-contact {
+    color: var(--muted);
+}
+
+.user-actions-cell {
+    width: 120px;
+}

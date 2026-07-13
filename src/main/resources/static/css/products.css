@@ -1,0 +1,11 @@
+.product-name {
+    min-width: 180px;
+}
+
+.product-description {
+    max-width: 380px;
+}
+
+.stock-count {
+    font-weight: 800;
+}

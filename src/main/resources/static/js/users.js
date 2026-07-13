@@ -1,11 +1,125 @@
 checkAuthentication();
 
-const role = localStorage.getItem("role");
+const role =
+    (localStorage.getItem("role") || "").toUpperCase();
 
-const createUserSection =
-    document.getElementById("createUserSection");
+const canCreateUsers =
+    role === "ROOT";
+
+const canEditUsers =
+    role === "ROOT" ||
+    role === "ADMIN" ||
+    role === "MANAGER";
+
+const canDeleteUsers =
+    role === "ROOT";
 
 let editingUserId = null;
+
+function getRoleBadge(roleName) {
+    const value =
+        roleName || "UNKNOWN";
+
+    return `
+        <span class="role-badge ${escapeHtml(value.toLowerCase())}">
+            ${escapeHtml(value)}
+        </span>
+    `;
+}
+
+function getUserStatus(user) {
+    if (user.active === false) {
+        return `
+            <span class="status-badge inactive">
+                Inactive
+            </span>
+        `;
+    }
+
+    return `
+        <span class="status-badge active">
+            Active
+        </span>
+    `;
+}
+
+function getUserActions(userId) {
+    let buttons = "";
+
+    if (canEditUsers) {
+
+        buttons += `
+            <button
+                    class="icon-btn edit-btn"
+                    data-testid="edit-button"
+                    onclick="editUser(${userId})"
+                    aria-label="Edit user">
+                <i class="bi bi-pencil"></i>
+            </button>
+        `;
+    }
+
+    if (canDeleteUsers) {
+
+        buttons += `
+            <button
+                    class="icon-btn delete-btn"
+                    data-testid="delete-button"
+                    onclick="deleteUser(${userId})"
+                    aria-label="Delete user">
+                <i class="bi bi-trash"></i>
+            </button>
+        `;
+    }
+
+    if (!buttons) {
+        return `<span class="muted">No actions</span>`;
+    }
+
+    return `
+        <div class="row-actions">
+            ${buttons}
+        </div>
+    `;
+}
+
+function renderUserRow(user) {
+    const statusText =
+        user.active === false ? "Inactive" : "Active";
+
+    const searchText = [
+        user.name,
+        user.email,
+        user.phone,
+        user.role,
+        statusText
+    ].join(" ");
+
+    return `
+        <tr
+                class="product-card"
+                data-testid="user-card"
+                data-search-text="${escapeHtml(searchText)}">
+            <td class="user-identity">
+                <strong class="cell-title">${escapeHtml(user.name)}</strong>
+            </td>
+
+            <td>
+                <span class="user-contact">${escapeHtml(user.email)}</span>
+            </td>
+
+            <td>${escapeHtml(user.phone)}</td>
+
+            <td>${getRoleBadge(user.role)}</td>
+
+            <td>${getUserStatus(user)}</td>
+
+            <td class="user-actions-cell">
+                ${getUserActions(user.id)}
+            </td>
+        </tr>
+    `;
+}
 
 async function loadUsers() {
 
@@ -14,73 +128,37 @@ async function loadUsers() {
         const response =
             await authorizedFetch("/users");
 
+        if (!response.ok) {
+            setMessage("Failed to load users.", "danger");
+            return;
+        }
+
         const users =
             await response.json();
 
-        let html = "";
+        const rows =
+            users.map(renderUserRow).join("");
 
-        users.forEach(user => {
-
-            let buttons = "";
-
-            if (
-                role === "ROOT" ||
-                role === "ADMIN" ||
-                role === "MANAGER"
-            ) {
-
-                buttons += `
-                    <button
-                        data-testid="edit-button"
-                        onclick="editUser(${user.id})">
-                        Edit
-                    </button>
-                `;
-            }
-
-            if (
-                role === "ROOT"
-            ) {
-
-                buttons += `
-                    <button
-                        data-testid="delete-button"
-                        onclick="deleteUser(${user.id})">
-                        Delete
-                    </button>
-                `;
-            }
-
-            html += `
-                <div
-                    class="product-card"
-                    data-testid="user-card">
-
-                    <h3>${user.name}</h3>
-
-                    <p>Email: ${user.email}</p>
-
-                    <p>Phone: ${user.phone}</p>
-
-                    <p>Role: ${user.role}</p>
-
-                    <p>Gender: ${user.gender}</p>
-
-                    ${buttons}
-
-                </div>
+        document.getElementById("users").innerHTML =
+            rows ||
+            `
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        No users found.
+                    </td>
+                </tr>
             `;
 
-        });
-
-        document.getElementById("users").innerHTML = html;
+        setupLiveSearch(
+            "search",
+            "#users tr[data-testid='user-card']"
+        );
 
     } catch (error) {
 
         console.error(error);
 
-        document.getElementById("message").innerText =
-            "Failed to load users.";
+        setMessage("Failed to load users.", "danger");
 
     }
 
@@ -97,16 +175,16 @@ async function createUser() {
             document.getElementById("email").value.trim(),
 
         password:
-        document.getElementById("password").value,
+            document.getElementById("password").value,
 
         phone:
             document.getElementById("phone").value.trim(),
 
         gender:
-        document.getElementById("gender").value,
+            document.getElementById("gender").value,
 
         role:
-        document.getElementById("role").value,
+            document.getElementById("role").value,
 
         active: true
 
@@ -114,8 +192,7 @@ async function createUser() {
 
     if (!user.name) {
 
-        document.getElementById("message").innerText =
-            "Name is required";
+        setMessage("Name is required", "warning");
 
         return;
 
@@ -123,8 +200,7 @@ async function createUser() {
 
     if (!user.email) {
 
-        document.getElementById("message").innerText =
-            "Email is required";
+        setMessage("Email is required", "warning");
 
         return;
 
@@ -138,8 +214,7 @@ async function createUser() {
 
     ) {
 
-        document.getElementById("message").innerText =
-            "Password is required";
+        setMessage("Password is required", "warning");
 
         return;
 
@@ -147,8 +222,7 @@ async function createUser() {
 
     if (!user.phone) {
 
-        document.getElementById("message").innerText =
-            "Phone is required";
+        setMessage("Phone is required", "warning");
 
         return;
 
@@ -156,8 +230,7 @@ async function createUser() {
 
     if (!user.gender) {
 
-        document.getElementById("message").innerText =
-            "Gender is required";
+        setMessage("Gender is required", "warning");
 
         return;
 
@@ -165,8 +238,7 @@ async function createUser() {
 
     if (!user.role) {
 
-        document.getElementById("message").innerText =
-            "Role is required";
+        setMessage("Role is required", "warning");
 
         return;
 
@@ -219,25 +291,25 @@ async function createUser() {
 
         if (response.ok) {
 
-            document.getElementById("message").innerText =
-
+            setMessage(
                 editingUserId === null
-
                     ? "User Created Successfully"
-
-                    : "User Updated Successfully";
+                    : "User Updated Successfully",
+                "success"
+            );
 
             clearForm();
 
-            loadUsers();
+            hideModal("createUserSection");
+
+            await loadUsers();
 
         } else {
 
             const error =
                 await response.text();
 
-            document.getElementById("message").innerText =
-                error;
+            setMessage(error, "danger");
 
         }
 
@@ -245,8 +317,7 @@ async function createUser() {
 
         console.error(error);
 
-        document.getElementById("message").innerText =
-            "Operation Failed";
+        setMessage("Operation Failed", "danger");
 
     }
 
@@ -261,10 +332,18 @@ async function editUser(id) {
                 "/users/" + id
             );
 
+        if (!response.ok) {
+            setMessage("Operation Failed", "danger");
+            return;
+        }
+
         const user =
             await response.json();
 
         editingUserId = id;
+
+        document.getElementById("userModalTitle").innerText =
+            "Edit User";
 
         document.getElementById("name").value =
             user.name;
@@ -291,12 +370,15 @@ async function editUser(id) {
         document.getElementById("createButton").innerText =
             "Update User";
 
-        document.getElementById("message").innerText =
-            "Editing User";
+        showModal("createUserSection");
+
+        setMessage("Editing User");
 
     } catch (error) {
 
         console.error(error);
+
+        setMessage("Operation Failed", "danger");
 
     }
 
@@ -322,21 +404,21 @@ async function deleteUser(id) {
 
         if (response.ok) {
 
-            document.getElementById("message").innerText =
-                "User Deleted Successfully";
+            setMessage("User Deleted Successfully", "success");
 
-            loadUsers();
+            await loadUsers();
 
         } else {
 
-            document.getElementById("message").innerText =
-                "Delete Failed";
+            setMessage("Delete Failed", "danger");
 
         }
 
     } catch (error) {
 
         console.error(error);
+
+        setMessage("Delete Failed", "danger");
 
     }
 
@@ -345,6 +427,9 @@ async function deleteUser(id) {
 function clearForm() {
 
     editingUserId = null;
+
+    document.getElementById("userModalTitle").innerText =
+        "New User";
 
     document.getElementById("name").value = "";
 
@@ -367,6 +452,16 @@ function clearForm() {
 
 }
 
+function toggleCreateUser() {
+
+    if (!canCreateUsers) {
+        return;
+    }
+
+    clearForm();
+    showModal("createUserSection");
+}
+
 function goBack() {
 
     window.location.href =
@@ -374,16 +469,26 @@ function goBack() {
 
 }
 
-if (
-    role !== "ROOT"
-) {
+if (!canCreateUsers) {
 
-    if (createUserSection) {
+    const openCreateUserButton =
+        document.getElementById("openCreateUserButton");
 
-        createUserSection.style.display = "none";
+    if (openCreateUserButton) {
+
+        openCreateUserButton.style.display = "none";
 
     }
 
+}
+
+const createUserSection =
+    document.getElementById("createUserSection");
+
+if (createUserSection) {
+    createUserSection.addEventListener("hidden.bs.modal", () => {
+        clearForm();
+    });
 }
 
 loadUsers();

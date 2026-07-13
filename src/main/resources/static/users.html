@@ -1,117 +1,290 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Users</title>
+    <title>Users | HAMS</title>
 
-    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/users.css">
 </head>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <body>
 
-<div class="container">
+<div class="app-shell">
 
-    <h1>Users</h1>
+    <aside class="sidebar">
 
-    <div id="createUserSection">
+        <div>
 
-        <h2>Create User</h2>
+            <a class="sidebar-brand" href="dashboard.html">
+                <span class="sidebar-logo">H</span>
 
-        <input
-                type="text"
-                id="name"
-                placeholder="Full Name">
+                <span>
+                    <h4>HAMS</h4>
+                    <small>Hierarchy Access Management</small>
+                </span>
+            </a>
 
-        <input
-                type="email"
-                id="email"
-                placeholder="Email">
+            <nav class="sidebar-nav">
+                <a class="sidebar-link" href="dashboard.html" data-nav="dashboard">
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
+                </a>
 
-        <input
-                type="password"
-                id="password"
-                placeholder="Password">
+                <a class="sidebar-link" href="products.html" data-nav="products">
+                    <i class="bi bi-box-seam"></i>
+                    Products
+                </a>
 
-        <input
-                type="text"
-                id="phone"
-                placeholder="Phone Number">
+                <a class="sidebar-link" href="users.html" data-nav="users">
+                    <i class="bi bi-people"></i>
+                    Users
+                </a>
 
-        <select id="gender">
+                <a class="sidebar-link" href="auditlogs.html" data-nav="auditlogs">
+                    <i class="bi bi-journal-text"></i>
+                    Audit Logs
+                </a>
+            </nav>
 
-            <option value="">Select Gender</option>
+        </div>
 
-            <option value="MALE">Male</option>
+        <div class="profile">
+            <span class="profile-avatar" id="profileInitials"></span>
 
-            <option value="FEMALE">Female</option>
+            <div class="profile-copy">
+                <strong id="profileName"></strong>
+                <small id="profileRole"></small>
+            </div>
 
-        </select>
+            <button class="icon-button logout-button"
+                    data-testid="logout-button"
+                    onclick="logout()"
+                    aria-label="Logout">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+        </div>
 
-        <select id="role">
+    </aside>
 
-            <option value="">Select Role</option>
+    <div class="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
 
-            <option value="ROOT">ROOT</option>
+    <main class="main-content">
 
-            <option value="ADMIN">ADMIN</option>
+        <div class="content-wrapper">
 
-            <option value="MANAGER">MANAGER</option>
+            <div class="mobile-topbar">
+                <div class="mobile-brand">
+                    <span class="mobile-logo">H</span>
+                    HAMS
+                </div>
 
-            <option value="EMPLOYEE">EMPLOYEE</option>
+                <button class="icon-button"
+                        onclick="toggleSidebar(true)"
+                        aria-label="Open navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
 
-            <option value="CUSTOMER">CUSTOMER</option>
+            <header class="page-header">
+                <div>
+                    <p class="eyebrow">Access Control</p>
+                    <h1 class="page-title">Users</h1>
+                    <p class="page-subtitle">
+                        Manage identities, roles, profile details, and account status.
+                    </p>
+                </div>
 
-        </select>
+                <div class="header-actions"></div>
+            </header>
 
-        <button
-                id="createButton"
-                onclick="createUser()">
+            <section class="toolbar">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
 
-            Create User
+                    <input id="search"
+                           type="text"
+                           placeholder="Search users...">
+                </div>
 
-        </button>
+                <div class="toolbar-group">
+                    <select id="sortBy"
+                            class="form-select toolbar-select"
+                            aria-label="Sort users">
+                        <option value="name-asc">Name</option>
+                        <option value="role-asc">Role</option>
+                        <option value="status-asc">Status</option>
+                    </select>
 
-    </div>
+                    <button class="btn btn-outline-light"
+                            data-testid="refresh-users-button"
+                            onclick="loadUsers()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Refresh Users
+                    </button>
 
-    <div class="actions">
+                    <button class="btn btn-ghost"
+                            data-testid="dashboard-button"
+                            onclick="goBack()">
+                        <i class="bi bi-speedometer2"></i>
+                        Dashboard
+                    </button>
 
-        <button
-                data-testid="refresh-users-button"
-                onclick="loadUsers()">
+                    <button id="openCreateUserButton"
+                            class="btn btn-primary"
+                            onclick="toggleCreateUser()">
+                        <i class="bi bi-person-plus"></i>
+                        New User
+                    </button>
+                </div>
+            </section>
 
-            Refresh Users
+            <section id="createUserSection" class="inline-form-panel">
+                <div class="table-card-header">
+                    <div>
+                        <h2 class="table-card-title" id="userModalTitle">
+                            New User
+                        </h2>
+                        <p class="table-card-subtitle">
+                            Create or update a user profile.
+                        </p>
+                    </div>
+                </div>
 
-        </button>
+                <div class="inline-form-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="name">Full Name</label>
+                            <input type="text"
+                                   id="name"
+                                   class="form-control"
+                                   placeholder="Full Name">
+                        </div>
 
-        <button
-                data-testid="dashboard-button"
-                onclick="goBack()">
+                        <div class="col-md-6">
+                            <label class="form-label" for="email">Email</label>
+                            <input type="email"
+                                   id="email"
+                                   class="form-control"
+                                   placeholder="Email">
+                        </div>
 
-            Dashboard
+                        <div class="col-md-6">
+                            <label class="form-label" for="password">Password</label>
+                            <input type="password"
+                                   id="password"
+                                   class="form-control"
+                                   placeholder="Password">
+                        </div>
 
-        </button>
+                        <div class="col-md-6">
+                            <label class="form-label" for="phone">Phone</label>
+                            <input type="text"
+                                   id="phone"
+                                   class="form-control"
+                                   placeholder="Phone Number">
+                        </div>
 
-    </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="gender">Gender</label>
+                            <select id="gender" class="form-select">
+                                <option value="">Select Gender</option>
+                                <option value="MALE">Male</option>
+                                <option value="FEMALE">Female</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
 
-    <p id="message"></p>
+                        <div class="col-md-6">
+                            <label class="form-label" for="role">Role</label>
+                            <select id="role" class="form-select">
+                                <option value="">Select Role</option>
+                                <option value="ROOT">ROOT</option>
+                                <option value="ADMIN">ADMIN</option>
+                                <option value="MANAGER">MANAGER</option>
+                                <option value="EMPLOYEE">EMPLOYEE</option>
+                                <option value="CUSTOMER">CUSTOMER</option>
+                            </select>
+                        </div>
+                    </div>
 
-    <hr>
+                    <div class="actions-row justify-content-end mt-3">
+                        <button type="button"
+                                class="btn btn-ghost"
+                                onclick="clearForm()">
+                            Clear
+                        </button>
 
-    <div
-            id="users"
-            data-testid="users-container">
+                        <button id="createButton"
+                                type="button"
+                                class="btn btn-primary"
+                                onclick="createUser()">
+                            Create User
+                        </button>
+                    </div>
+                </div>
+            </section>
 
-    </div>
+            <p id="message" class="message-line"></p>
+
+            <section class="table-card">
+                <div class="table-card-header">
+                    <div>
+                        <h2 class="table-card-title">User Directory</h2>
+                        <p class="table-card-subtitle">
+                            Role and status overview across the hierarchy.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="users" data-testid="users-container">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+
+    </main>
 
 </div>
 
+<div id="toastContainer"
+     class="toast-container position-fixed top-0 end-0 p-3">
+</div>
+
 <script src="js/common.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/users.js"></script>
 
 </body>

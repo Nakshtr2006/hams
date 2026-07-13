@@ -1,7 +1,10 @@
 checkAuthentication();
 
-const name = localStorage.getItem("name");
-const role = (localStorage.getItem("role") || "").toUpperCase();
+const name =
+    localStorage.getItem("name") || "Unknown User";
+
+const role =
+    (localStorage.getItem("role") || "").toUpperCase();
 
 console.log("Logged in Role:", role);
 
@@ -11,6 +14,22 @@ document.getElementById("welcomeMessage").innerText =
 document.getElementById("roleMessage").innerText =
     "Role: " + role;
 
+function renderMetricCard(icon, label, value, detail) {
+    return `
+        <article class="metric-card">
+            <span class="metric-icon">
+                <i class="bi ${icon}"></i>
+            </span>
+
+            <p class="metric-label">${escapeHtml(label)}</p>
+
+            <h2 class="metric-value">${escapeHtml(value)}</h2>
+
+            <p class="mb-0 muted">${escapeHtml(detail)}</p>
+        </article>
+    `;
+}
+
 async function loadStats() {
 
     try {
@@ -18,14 +37,39 @@ async function loadStats() {
         const response =
             await authorizedFetch("/dashboard/stats");
 
+        if (!response.ok) {
+            return;
+        }
+
         const stats =
             await response.json();
 
-        document.getElementById("stats").innerHTML = `
-            <h3>Total Users: ${stats.totalUsers}</h3>
-            <h3>Total Products: ${stats.totalProducts}</h3>
-            <h3>Total Audit Logs: ${stats.totalAuditLogs}</h3>
-        `;
+        document.getElementById("stats").innerHTML = [
+            renderMetricCard(
+                "bi-people",
+                "Total Users",
+                stats.totalUsers,
+                "Managed identities"
+            ),
+            renderMetricCard(
+                "bi-box-seam",
+                "Total Products",
+                stats.totalProducts,
+                "Inventory records"
+            ),
+            renderMetricCard(
+                "bi-journal-text",
+                "Total Audit Logs",
+                stats.totalAuditLogs,
+                "Recorded events"
+            ),
+            renderMetricCard(
+                "bi-graph-up-arrow",
+                "Revenue",
+                "—",
+                "Statistics placeholder"
+            )
+        ].join("");
 
     } catch (error) {
 
@@ -33,6 +77,62 @@ async function loadStats() {
 
     }
 
+}
+
+function renderRecentLog(log) {
+    return `
+        <div class="activity-item">
+            <span class="activity-dot"></span>
+
+            <div>
+                <strong>${escapeHtml(log.action || "System Event")}</strong>
+                <small>
+                    ${escapeHtml(log.performedBy || "UNKNOWN")}
+                    ·
+                    ${escapeHtml(formatDateTime(log.createdAt))}
+                </small>
+            </div>
+        </div>
+    `;
+}
+
+async function loadRecentLogs() {
+    const recentActivity =
+        document.getElementById("recentActivity");
+
+    if (!recentActivity) {
+        return;
+    }
+
+    try {
+        const response =
+            await authorizedFetch("/audit-logs");
+
+        if (!response.ok) {
+            recentActivity.innerHTML =
+                `<div class="empty-state">Recent activity is available to ROOT users.</div>`;
+
+            return;
+        }
+
+        const logs =
+            await response.json();
+
+        recentActivity.innerHTML =
+            logs
+                .slice()
+                .reverse()
+                .slice(0, 5)
+                .map(renderRecentLog)
+                .join("") ||
+            `<div class="empty-state">No recent activity found.</div>`;
+
+    } catch (error) {
+        console.error(error);
+
+        recentActivity.innerHTML =
+            `<div class="empty-state">Unable to load recent activity.</div>`;
+    }
 }
 
 function applyRolePermissions() {
@@ -125,13 +225,6 @@ function goToAuditLogs() {
 
 }
 
-function logout() {
-
-    localStorage.clear();
-
-    window.location.href = "login.html";
-
-}
-
 loadStats();
+loadRecentLogs();
 applyRolePermissions();

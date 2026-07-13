@@ -1,0 +1,8 @@
+.audit-table-wrap {
+    max-height: calc(100vh - 260px);
+    overflow: auto;
+}
+
+.audit-description {
+    max-width: 420px;
+}
